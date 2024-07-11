@@ -107,6 +107,9 @@ const FlagGame = () => {
       setCurrentFlagIndex((currentFlagIndex + 1) % flags.length);
       setUserAnswer('');
       setResultMessage('');
+      if (gameMode === 'multiple-choice') {
+        generateOptions();
+      }
     }, 2000);
   };
 
@@ -115,6 +118,7 @@ const FlagGame = () => {
     setTotalQuestions(0);
     localStorage.removeItem('score');
     localStorage.removeItem('totalQuestions');
+    setIsGameActive(false);  // Set the game as inactive
   };
 
   const startGame = () => {
@@ -195,37 +199,41 @@ const FlagGame = () => {
           <button onClick={startGame} disabled={isGameActive}>Start Game</button>
         </div>
       )}
-      <p>Time Remaining: {useTimer ? `${timeRemaining}s` : 'No Timer'}</p>
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : (
+      {isGameActive && (
         <>
-          <div id="flag-container">
-            <img id="flag-image" alt="Country Flag" />
-          </div>
-          {gameMode === 'text' ? (
-            <>
-              <input 
-                type="text" 
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                placeholder="Enter country name"
-                disabled={!isGameActive}
-              />
-              <button onClick={() => checkAnswer(userAnswer)} disabled={!isGameActive}>Submit</button>
-            </>
+          <p>Time Remaining: {useTimer ? `${timeRemaining}s` : 'No Timer'}</p>
+          {isLoading ? (
+            <p>Loading...</p>
           ) : (
-            <div>
-              {options.map((option, index) => (
-                <button key={index} onClick={() => checkAnswer(option)} disabled={!isGameActive}>
-                  {option}
-                </button>
-              ))}
-            </div>
+            <>
+              <div id="flag-container">
+                <img id="flag-image" alt="Country Flag" />
+              </div>
+              {gameMode === 'text' ? (
+                <>
+                  <input 
+                    type="text" 
+                    value={userAnswer}
+                    onChange={(e) => setUserAnswer(e.target.value)}
+                    placeholder="Enter country name"
+                    disabled={!isGameActive}
+                  />
+                  <button onClick={() => checkAnswer(userAnswer)} disabled={!isGameActive}>Submit</button>
+                </>
+              ) : (
+                <div>
+                  {options.map((option, index) => (
+                    <button key={index} onClick={() => checkAnswer(option)} disabled={!isGameActive}>
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <p>{resultMessage}</p>
+              <p>Score: {score} / {totalQuestions}</p>
+              <button onClick={resetScore} disabled={!isGameActive}>Reset Score</button>
+            </>
           )}
-          <p>{resultMessage}</p>
-          <p>Score: {score} / {totalQuestions}</p>
-          <button onClick={resetScore} disabled={isGameActive}>Reset Score</button>
         </>
       )}
     </div>
@@ -233,5 +241,3 @@ const FlagGame = () => {
 };
 
 export default FlagGame;
-
-
