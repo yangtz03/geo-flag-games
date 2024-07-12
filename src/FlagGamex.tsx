@@ -3,8 +3,14 @@ import axios from 'axios';
 
 const FlagGame = () => {
   const [flags, setFlags] = useState([]);
-  const [currentFlagIndex, setCurrentFlagIndex] = useState(0);
-  const [userAnswer, setUserAnswer] = useState('');
+  const [currentFlagIndex, setCurrentFlagIndex] = useState(() => {
+    const savedIndex = localStorage.getItem('currentFlagIndex');
+    return savedIndex !== null ? JSON.parse(savedIndex) : 0;
+  });
+  const [userAnswer, setUserAnswer] = useState(() => {
+    const savedUserAnswer = localStorage.getItem('userAnswer');
+    return savedUserAnswer !== null ? savedUserAnswer : '';
+  });
   const [resultMessage, setResultMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [score, setScore] = useState(() => {
@@ -16,11 +22,26 @@ const FlagGame = () => {
     return savedTotalQuestions !== null ? JSON.parse(savedTotalQuestions) : 0;
   });
 
-  const [timeRemaining, setTimeRemaining] = useState(0);
-  const [initialTime, setInitialTime] = useState(60); // Default timer set to 60 seconds
-  const [isGameActive, setIsGameActive] = useState(false);
-  const [useTimer, setUseTimer] = useState(false);
-  const [gameMode, setGameMode] = useState('text'); // 'text' or 'multiple-choice'
+  const [timeRemaining, setTimeRemaining] = useState(() => {
+    const savedTimeRemaining = localStorage.getItem('timeRemaining');
+    return savedTimeRemaining !== null ? JSON.parse(savedTimeRemaining) : 60; // Default to 60 seconds
+  });
+  const [initialTime, setInitialTime] = useState(() => {
+    const savedInitialTime = localStorage.getItem('initialTime');
+    return savedInitialTime !== null ? JSON.parse(savedInitialTime) : 60;
+  });
+  const [isGameActive, setIsGameActive] = useState(() => {
+    const savedIsGameActive = localStorage.getItem('isGameActive');
+    return savedIsGameActive !== null ? JSON.parse(savedIsGameActive) : false;
+  });
+  const [useTimer, setUseTimer] = useState(() => {
+    const savedUseTimer = localStorage.getItem('useTimer');
+    return savedUseTimer !== null ? JSON.parse(savedUseTimer) : false;
+  });
+  const [gameMode, setGameMode] = useState(() => {
+    const savedGameMode = localStorage.getItem('gameMode');
+    return savedGameMode !== null ? savedGameMode : 'text';
+  });
   const [options, setOptions] = useState([]);
 
   useEffect(() => {
@@ -52,6 +73,14 @@ const FlagGame = () => {
   }, [currentFlagIndex, flags, gameMode]);
 
   useEffect(() => {
+    localStorage.setItem('currentFlagIndex', JSON.stringify(currentFlagIndex));
+  }, [currentFlagIndex]);
+
+  useEffect(() => {
+    localStorage.setItem('userAnswer', userAnswer);
+  }, [userAnswer]);
+
+  useEffect(() => {
     localStorage.setItem('score', JSON.stringify(score));
   }, [score]);
 
@@ -60,14 +89,34 @@ const FlagGame = () => {
   }, [totalQuestions]);
 
   useEffect(() => {
+    localStorage.setItem('timeRemaining', JSON.stringify(timeRemaining));
+  }, [timeRemaining]);
+
+  useEffect(() => {
+    localStorage.setItem('initialTime', JSON.stringify(initialTime));
+  }, [initialTime]);
+
+  useEffect(() => {
+    localStorage.setItem('useTimer', JSON.stringify(useTimer));
+  }, [useTimer]);
+
+  useEffect(() => {
+    localStorage.setItem('gameMode', gameMode);
+  }, [gameMode]);
+
+  useEffect(() => {
+    localStorage.setItem('isGameActive', JSON.stringify(isGameActive));
+  }, [isGameActive]);
+
+  useEffect(() => {
     let timer;
     if (isGameActive && useTimer && timeRemaining > 0) {
       timer = setInterval(() => {
         setTimeRemaining(prevTime => prevTime - 1);
       }, 1000);
     } else if (timeRemaining === 0 && isGameActive && useTimer) {
-      setIsGameActive(false);
       alert('Time is up! Game over.');
+      resetGame();
     }
 
     return () => clearInterval(timer);
@@ -107,18 +156,51 @@ const FlagGame = () => {
       setCurrentFlagIndex((currentFlagIndex + 1) % flags.length);
       setUserAnswer('');
       setResultMessage('');
-      if (gameMode === 'multiple-choice') {
-        generateOptions();
-      }
     }, 2000);
   };
 
   const resetScore = () => {
     setScore(0);
     setTotalQuestions(0);
+    setCurrentFlagIndex(0);
+    setUserAnswer('');
+    setResultMessage('');
     localStorage.removeItem('score');
     localStorage.removeItem('totalQuestions');
-    setIsGameActive(false);  // Set the game as inactive
+    localStorage.removeItem('currentFlagIndex');
+    localStorage.removeItem('userAnswer');
+    localStorage.removeItem('timeRemaining');
+    localStorage.removeItem('initialTime');
+    localStorage.removeItem('useTimer');
+    localStorage.removeItem('gameMode');
+    localStorage.removeItem('isGameActive');
+    setTimeRemaining(60);
+    setInitialTime(60);
+    setUseTimer(false);
+    setGameMode('text');
+    setIsGameActive(false);
+  };
+
+  const resetGame = () => {
+    setScore(0);
+    setTotalQuestions(0);
+    setCurrentFlagIndex(0);
+    setUserAnswer('');
+    setResultMessage('');
+    setTimeRemaining(60);
+    setInitialTime(60);
+    setUseTimer(false);
+    setGameMode('text');
+    setIsGameActive(false);
+    localStorage.removeItem('score');
+    localStorage.removeItem('totalQuestions');
+    localStorage.removeItem('currentFlagIndex');
+    localStorage.removeItem('userAnswer');
+    localStorage.removeItem('timeRemaining');
+    localStorage.removeItem('initialTime');
+    localStorage.removeItem('useTimer');
+    localStorage.removeItem('gameMode');
+    localStorage.removeItem('isGameActive');
   };
 
   const startGame = () => {
@@ -199,41 +281,37 @@ const FlagGame = () => {
           <button onClick={startGame} disabled={isGameActive}>Start Game</button>
         </div>
       )}
-      {isGameActive && (
+      <p>Time Remaining: {useTimer ? `${timeRemaining}s` : 'No Timer'}</p>
+      {isLoading ? (
+        <p>Loading...</p>
+      ) : (
         <>
-          <p>Time Remaining: {useTimer ? `${timeRemaining}s` : 'No Timer'}</p>
-          {isLoading ? (
-            <p>Loading...</p>
-          ) : (
+          <div id="flag-container">
+            <img id="flag-image" alt="Country Flag" />
+          </div>
+          {gameMode === 'text' ? (
             <>
-              <div id="flag-container">
-                <img id="flag-image" alt="Country Flag" />
-              </div>
-              {gameMode === 'text' ? (
-                <>
-                  <input 
-                    type="text" 
-                    value={userAnswer}
-                    onChange={(e) => setUserAnswer(e.target.value)}
-                    placeholder="Enter country name"
-                    disabled={!isGameActive}
-                  />
-                  <button onClick={() => checkAnswer(userAnswer)} disabled={!isGameActive}>Submit</button>
-                </>
-              ) : (
-                <div>
-                  {options.map((option, index) => (
-                    <button key={index} onClick={() => checkAnswer(option)} disabled={!isGameActive}>
-                      {option}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <p>{resultMessage}</p>
-              <p>Score: {score} / {totalQuestions}</p>
-              <button onClick={resetScore} disabled={!isGameActive}>Reset Score</button>
+              <input 
+                type="text" 
+                value={userAnswer}
+                onChange={(e) => setUserAnswer(e.target.value)}
+                placeholder="Enter country name"
+                disabled={!isGameActive}
+              />
+              <button onClick={() => checkAnswer(userAnswer)} disabled={!isGameActive}>Submit</button>
             </>
+          ) : (
+            <div>
+              {options.map((option, index) => (
+                <button key={index} onClick={() => checkAnswer(option)} disabled={!isGameActive}>
+                  {option}
+                </button>
+              ))}
+            </div>
           )}
+          <p>{resultMessage}</p>
+          <p>Score: {score} / {totalQuestions}</p>
+          <button onClick={resetScore} disabled={!isGameActive}>Reset Score</button>
         </>
       )}
     </div>
@@ -241,3 +319,7 @@ const FlagGame = () => {
 };
 
 export default FlagGame;
+
+
+
+

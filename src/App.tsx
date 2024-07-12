@@ -1,5 +1,5 @@
 import React from 'react';
-import FlagGame from './FlagGame.tsx';
+import FlagGame from './FlagGamex.tsx';
 import './App.css'
 
 function App() {
