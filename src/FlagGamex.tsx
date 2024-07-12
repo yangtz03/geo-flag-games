@@ -43,6 +43,7 @@ const FlagGame = () => {
     return savedGameMode !== null ? savedGameMode : 'text';
   });
   const [options, setOptions] = useState([]);
+  const [hasAttempted, setHasAttempted] = useState(false); // New state to track if an attempt has been made
 
   useEffect(() => {
     const fetchFlags = async () => {
@@ -116,7 +117,8 @@ const FlagGame = () => {
       }, 1000);
     } else if (timeRemaining === 0 && isGameActive && useTimer) {
       alert('Time is up! Game over.');
-      resetGame();
+      resetScore();
+      setIsGameActive(false);
     }
 
     return () => clearInterval(timer);
@@ -151,34 +153,33 @@ const FlagGame = () => {
     }
 
     setTotalQuestions(totalQuestions + 1);
+    setHasAttempted(true);
 
     setTimeout(() => {
       setCurrentFlagIndex((currentFlagIndex + 1) % flags.length);
       setUserAnswer('');
       setResultMessage('');
+      setHasAttempted(false);
     }, 2000);
+  };
+
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      checkAnswer(userAnswer);
+    }
   };
 
   const resetScore = () => {
     setScore(0);
     setTotalQuestions(0);
-    setCurrentFlagIndex(0);
+    setTimeRemaining(initialTime);
+    setIsGameActive(false);
     setUserAnswer('');
     setResultMessage('');
     localStorage.removeItem('score');
     localStorage.removeItem('totalQuestions');
-    localStorage.removeItem('currentFlagIndex');
-    localStorage.removeItem('userAnswer');
     localStorage.removeItem('timeRemaining');
-    localStorage.removeItem('initialTime');
-    localStorage.removeItem('useTimer');
-    localStorage.removeItem('gameMode');
     localStorage.removeItem('isGameActive');
-    setTimeRemaining(60);
-    setInitialTime(60);
-    setUseTimer(false);
-    setGameMode('text');
-    setIsGameActive(false);
   };
 
   const resetGame = () => {
@@ -206,7 +207,11 @@ const FlagGame = () => {
   const startGame = () => {
     setTimeRemaining(useTimer ? initialTime : 0);
     setIsGameActive(true);
-    setCurrentFlagIndex(0);
+    if (currentFlagIndex === 0) {
+      setCurrentFlagIndex(0);
+    } else {
+      setCurrentFlagIndex(currentFlagIndex + 1)
+    }
     setScore(0);
     setTotalQuestions(0);
     setUserAnswer('');
@@ -214,6 +219,7 @@ const FlagGame = () => {
     if (gameMode === 'multiple-choice') {
       generateOptions();
     }
+    setHasAttempted(false);
   };
 
   return (
@@ -295,15 +301,16 @@ const FlagGame = () => {
                 type="text" 
                 value={userAnswer}
                 onChange={(e) => setUserAnswer(e.target.value)}
+                onKeyDown={handleKeyPress}
                 placeholder="Enter country name"
-                disabled={!isGameActive}
+                disabled={!isGameActive || hasAttempted}
               />
-              <button onClick={() => checkAnswer(userAnswer)} disabled={!isGameActive}>Submit</button>
+              <button onClick={() => checkAnswer(userAnswer)} disabled={!isGameActive || hasAttempted}>Submit</button>
             </>
           ) : (
             <div>
               {options.map((option, index) => (
-                <button key={index} onClick={() => checkAnswer(option)} disabled={!isGameActive}>
+                <button key={index} onClick={() => checkAnswer(option)} disabled={!isGameActive || hasAttempted}>
                   {option}
                 </button>
               ))}
@@ -312,6 +319,7 @@ const FlagGame = () => {
           <p>{resultMessage}</p>
           <p>Score: {score} / {totalQuestions}</p>
           <button onClick={resetScore} disabled={!isGameActive}>Reset Score</button>
+          <button onClick={resetGame} disabled={!isGameActive}>Restart Game</button>
         </>
       )}
     </div>
@@ -319,7 +327,3 @@ const FlagGame = () => {
 };
 
 export default FlagGame;
-
-
-
-
