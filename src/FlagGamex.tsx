@@ -1,6 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const Modal = ({ show, onClose, children }) => {
+  if (!show) return null;
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal">
+        <button className="close-button" onClick={onClose}>X</button>
+        <div className="modal-content">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const FlagGame = () => {
   const [flags, setFlags] = useState([]);
   const [currentFlagIndex, setCurrentFlagIndex] = useState(() => {
@@ -43,7 +58,9 @@ const FlagGame = () => {
     return savedGameMode !== null ? savedGameMode : 'text';
   });
   const [options, setOptions] = useState([]);
-  const [hasAttempted, setHasAttempted] = useState(false); // New state to track if an attempt has been made
+  const [hasAttempted, setHasAttempted] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
 
   useEffect(() => {
     const fetchFlags = async () => {
@@ -116,9 +133,9 @@ const FlagGame = () => {
         setTimeRemaining(prevTime => prevTime - 1);
       }, 1000);
     } else if (timeRemaining === 0 && isGameActive && useTimer) {
-      alert('Time is up! Game over.');
-      resetScore();
       setIsGameActive(false);
+      setModalMessage(`Time is up! Game over. Your final score is ${score} out of ${totalQuestions}.`);
+      setShowModal(true);
     }
 
     return () => clearInterval(timer);
@@ -180,6 +197,8 @@ const FlagGame = () => {
     localStorage.removeItem('totalQuestions');
     localStorage.removeItem('timeRemaining');
     localStorage.removeItem('isGameActive');
+    setModalMessage(`Score reset! You can start a new game. Your score was ${score} / ${totalQuestions}`);
+    setShowModal(true);
   };
 
   const resetGame = () => {
@@ -202,6 +221,8 @@ const FlagGame = () => {
     localStorage.removeItem('useTimer');
     localStorage.removeItem('gameMode');
     localStorage.removeItem('isGameActive');
+    setModalMessage(`Game restarted! You can start a new game. Your score was ${score} / ${totalQuestions}`);
+    setShowModal(true);
   };
 
   const startGame = () => {
@@ -211,7 +232,7 @@ const FlagGame = () => {
       setCurrentFlagIndex(0);
     } else {
       setCurrentFlagIndex(currentFlagIndex + 1)
-    }
+    } 
     setScore(0);
     setTotalQuestions(0);
     setUserAnswer('');
@@ -322,8 +343,14 @@ const FlagGame = () => {
           <button onClick={resetGame} disabled={!isGameActive}>Restart Game</button>
         </>
       )}
+      <Modal show={showModal} onClose={() => setShowModal(false)}>
+        <h2>{modalMessage.includes('Time is up') ? 'Time is up! Game over.' : 'Game Notification'}</h2>
+        <p>{modalMessage}</p>
+        <button onClick={() => setShowModal(false)}>Close</button>
+      </Modal>
     </div>
   );
 };
 
 export default FlagGame;
+

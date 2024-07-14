@@ -13,3 +13,8 @@ function App() {
 
 export default App
 
+/* if (currentFlagIndex === 0) {
+      setCurrentFlagIndex(0);
+    } else {
+      setCurrentFlagIndex(currentFlagIndex + 1)
+    }  */
