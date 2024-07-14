@@ -17,4 +17,4 @@ export default App
       setCurrentFlagIndex(0);
     } else {
       setCurrentFlagIndex(currentFlagIndex + 1)
-    }  */
+    }  Your final score is ${score} out of ${totalQuestions}.*/
