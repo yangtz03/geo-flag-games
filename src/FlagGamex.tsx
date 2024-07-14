@@ -231,7 +231,7 @@ const FlagGame = () => {
     if (currentFlagIndex === 0) {
       setCurrentFlagIndex(0);
     } else {
-      setCurrentFlagIndex(currentFlagIndex + 1)
+      setCurrentFlagIndex(currentFlagIndex)
     } 
     setScore(0);
     setTotalQuestions(0);
