@@ -305,7 +305,7 @@ const FlagGame = () => {
               Multiple Choice Mode
             </label>
           </div>
-          <button onClick={startGame} disabled={isGameActive}>Start Game</button>
+          <button onClick={startGame} disabled={isGameActive}>Start Game!</button>
         </div>
       )}
       <p>Time Remaining: {useTimer ? `${timeRemaining}s` : 'No Timer'}</p>
@@ -326,7 +326,7 @@ const FlagGame = () => {
                 placeholder="Enter country name"
                 disabled={!isGameActive || hasAttempted}
               />
-              <button onClick={() => checkAnswer(userAnswer)} disabled={!isGameActive || hasAttempted}>Submit</button>
+              <button onClick={() => checkAnswer(userAnswer)} disabled={!isGameActive || hasAttempted}>Submit Answer</button>
             </>
           ) : (
             <div>
@@ -339,8 +339,8 @@ const FlagGame = () => {
           )}
           <p>{resultMessage}</p>
           <p>Score: {score} / {totalQuestions}</p>
-          <button onClick={resetScore} disabled={!isGameActive}>Reset Score</button>
-          <button onClick={resetGame} disabled={!isGameActive}>Restart Game</button>
+          <button onClick={resetScore} disabled={!isGameActive}>Reset Score (Keeps Flag Progress)</button>
+          <button onClick={resetGame} disabled={!isGameActive}>Restart Game From Beginning</button>
         </>
       )}
       <Modal show={showModal} onClose={() => setShowModal(false)}>
