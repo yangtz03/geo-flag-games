@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import './App.css';
 
 const Modal = ({ show, onClose, children }) => {
   if (!show) return null;
@@ -36,7 +37,6 @@ const FlagGame = () => {
     const savedTotalQuestions = localStorage.getItem('totalQuestions');
     return savedTotalQuestions !== null ? JSON.parse(savedTotalQuestions) : 0;
   });
-
   const [timeRemaining, setTimeRemaining] = useState(() => {
     const savedTimeRemaining = localStorage.getItem('timeRemaining');
     return savedTimeRemaining !== null ? JSON.parse(savedTimeRemaining) : 60; // Default to 60 seconds
@@ -130,60 +130,66 @@ const FlagGame = () => {
     let timer;
     if (isGameActive && useTimer && timeRemaining > 0) {
       timer = setInterval(() => {
-        setTimeRemaining(prevTime => prevTime - 1);
+        setTimeRemaining(prev => prev - 1);
       }, 1000);
-    } else if (timeRemaining === 0 && isGameActive && useTimer) {
-      setIsGameActive(false);
-      setModalMessage(`Time is up! Game over. Your final score is ${score} out of ${totalQuestions}.`);
+    } else if (timeRemaining === 0) {
       setShowModal(true);
+      setModalMessage(`Time is up! You scored ${score} out of ${totalQuestions}.`);
+      setIsGameActive(false);
     }
 
     return () => clearInterval(timer);
   }, [isGameActive, useTimer, timeRemaining]);
 
   const loadFlag = () => {
-    const flagImage = document.getElementById('flag-image');
-    if (flags[currentFlagIndex]) {
-      flagImage.src = flags[currentFlagIndex].src;
+    if (flags.length > 0) {
+      const flag = flags[currentFlagIndex];
+      document.getElementById('flag-image').src = flag.src;
     }
   };
 
   const generateOptions = () => {
-    const correctAnswer = flags[currentFlagIndex].country;
-    const incorrectOptions = flags
-      .filter((_, index) => index !== currentFlagIndex)
-      .sort(() => 0.5 - Math.random())
-      .slice(0, 3)
-      .map(flag => flag.country);
-
-    const allOptions = [correctAnswer, ...incorrectOptions].sort(() => 0.5 - Math.random());
-    setOptions(allOptions);
+    if (flags.length > 0) {
+      const correctOption = flags[currentFlagIndex].country;
+      const incorrectOptions = flags
+        .filter((_, index) => index !== currentFlagIndex)
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 3)
+        .map(flag => flag.country);
+      const newOptions = [...incorrectOptions, correctOption].sort(() => 0.5 - Math.random());
+      setOptions(newOptions);
+    }
   };
 
   const checkAnswer = (answer) => {
-    const correctAnswer = flags[currentFlagIndex]?.country.toLowerCase();
-    if (answer.trim().toLowerCase() === correctAnswer) {
+    setHasAttempted(true);
+    setTotalQuestions(prev => prev + 1);
+
+    if (answer.toLowerCase() === flags[currentFlagIndex].country.toLowerCase()) {
+      setScore(prev => prev + 1);
       setResultMessage('Correct!');
-      setScore(score + 1);
     } else {
-      setResultMessage(`Wrong! The correct answer is ${flags[currentFlagIndex]?.country}`);
+      setResultMessage(`Wrong! The correct answer is ${flags[currentFlagIndex].country}.`);
     }
 
-    setTotalQuestions(totalQuestions + 1);
-    setHasAttempted(true);
-
     setTimeout(() => {
-      setCurrentFlagIndex((currentFlagIndex + 1) % flags.length);
-      setUserAnswer('');
-      setResultMessage('');
       setHasAttempted(false);
+      setResultMessage('');
+      setCurrentFlagIndex(prev => (prev + 1) % flags.length);
+      setUserAnswer('');
     }, 2000);
   };
 
   const handleKeyPress = (event) => {
-    if (event.key === 'Enter') {
+    if (event.key === 'Enter' && !hasAttempted && userAnswer.trim() !== '') {
       checkAnswer(userAnswer);
     }
+  };
+
+  const startGame = () => {
+    setIsGameActive(true);
+    setShowModal(false);
+    setTimeRemaining(initialTime);
   };
 
   const resetScore = () => {
@@ -192,12 +198,7 @@ const FlagGame = () => {
     setTimeRemaining(initialTime);
     setIsGameActive(false);
     setUserAnswer('');
-    setResultMessage('');
-    localStorage.removeItem('score');
-    localStorage.removeItem('totalQuestions');
-    localStorage.removeItem('timeRemaining');
-    localStorage.removeItem('isGameActive');
-    setModalMessage(`Score reset! You can start a new game. Your score was ${score} / ${totalQuestions}`);
+    setModalMessage(`Score has been reset. You can start a new game. Your score was ${score} / ${totalQuestions}.`);
     setShowModal(true);
   };
 
@@ -205,152 +206,110 @@ const FlagGame = () => {
     setScore(0);
     setTotalQuestions(0);
     setCurrentFlagIndex(0);
-    setUserAnswer('');
-    setResultMessage('');
-    setTimeRemaining(60);
-    setInitialTime(60);
-    setUseTimer(false);
-    setGameMode('text');
+    setTimeRemaining(initialTime);
     setIsGameActive(false);
-    localStorage.removeItem('score');
-    localStorage.removeItem('totalQuestions');
-    localStorage.removeItem('currentFlagIndex');
-    localStorage.removeItem('userAnswer');
-    localStorage.removeItem('timeRemaining');
-    localStorage.removeItem('initialTime');
-    localStorage.removeItem('useTimer');
-    localStorage.removeItem('gameMode');
-    localStorage.removeItem('isGameActive');
-    setModalMessage(`Game restarted! You can start a new game. Your score was ${score} / ${totalQuestions}`);
+    setUserAnswer('');
+    setModalMessage(`Game has been restarted. You can start a new game. Your score was ${score} / ${totalQuestions}.`);
     setShowModal(true);
   };
 
-  const startGame = () => {
-    setTimeRemaining(useTimer ? initialTime : 0);
-    setIsGameActive(true);
-    if (currentFlagIndex === 0) {
-      setCurrentFlagIndex(0);
-    } else {
-      setCurrentFlagIndex(currentFlagIndex)
-    } 
-    setScore(0);
-    setTotalQuestions(0);
-    setUserAnswer('');
-    setResultMessage('');
-    if (gameMode === 'multiple-choice') {
-      generateOptions();
-    }
-    setHasAttempted(false);
-  };
-
   return (
-    <div className="container">
-      <h1>Guess the Country Flag</h1>
-      {!isGameActive && (
-        <div>
+    <div>
+      <header>Guess the Country Flag</header>
+      <div className="container">
+        {!isGameActive && (
           <div>
-            <label>
-              <input
-                type="radio"
-                name="timer"
-                value="no"
-                checked={!useTimer}
-                onChange={() => setUseTimer(false)}
-              />
-              Play without timer
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="timer"
-                value="yes"
-                checked={useTimer}
-                onChange={() => setUseTimer(true)}
-              />
-              Play with timer
-            </label>
-          </div>
-          {useTimer && (
             <div>
               <label>
-                Set Timer (seconds):
-                <input 
-                  type="number" 
-                  value={initialTime}
-                  onChange={(e) => setInitialTime(Number(e.target.value))}
-                  disabled={isGameActive}
+                <input
+                  type="checkbox"
+                  checked={useTimer}
+                  onChange={() => setUseTimer(!useTimer)}
                 />
+                Play with timer
               </label>
             </div>
-          )}
-          <div>
-            <label>
-              <input
-                type="radio"
-                name="gameMode"
-                value="text"
-                checked={gameMode === 'text'}
-                onChange={() => setGameMode('text')}
-              />
-              Text Input Mode
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="gameMode"
-                value="multiple-choice"
-                checked={gameMode === 'multiple-choice'}
-                onChange={() => setGameMode('multiple-choice')}
-              />
-              Multiple Choice Mode
-            </label>
-          </div>
-          <button onClick={startGame} disabled={isGameActive}>Start Game!</button>
-        </div>
-      )}
-      <p>Time Remaining: {useTimer ? `${timeRemaining}s` : 'No Timer'}</p>
-      {isLoading ? (
-        <p>Loading...</p>
-      ) : (
-        <>
-          <div id="flag-container">
-            <img id="flag-image" alt="Country Flag" />
-          </div>
-          {gameMode === 'text' ? (
-            <>
-              <input 
-                type="text" 
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="Enter country name"
-                disabled={!isGameActive || hasAttempted}
-              />
-              <button onClick={() => checkAnswer(userAnswer)} disabled={!isGameActive || hasAttempted}>Submit Answer</button>
-            </>
-          ) : (
-            <div>
-              {options.map((option, index) => (
-                <button key={index} onClick={() => checkAnswer(option)} disabled={!isGameActive || hasAttempted}>
-                  {option}
-                </button>
-              ))}
+            {useTimer && (
+              <div>
+                <label>
+                  Set Timer (seconds):
+                  <input 
+                    type="number" 
+                    value={initialTime}
+                    onChange={(e) => setInitialTime(Number(e.target.value))}
+                    disabled={isGameActive}
+                  />
+                </label>
+              </div>
+            )}
+            <div className="radio-group">
+              <label>
+                <input
+                  type="radio"
+                  name="gameMode"
+                  value="text"
+                  checked={gameMode === 'text'}
+                  onChange={() => setGameMode('text')}
+                />
+                Text Input Mode
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="gameMode"
+                  value="multiple-choice"
+                  checked={gameMode === 'multiple-choice'}
+                  onChange={() => setGameMode('multiple-choice')}
+                />
+                Multiple Choice Mode
+              </label>
             </div>
-          )}
-          <p>{resultMessage}</p>
-          <p>Score: {score} / {totalQuestions}</p>
-          <button onClick={resetScore} disabled={!isGameActive}>Reset Score (Keeps Flag Progress)</button>
-          <button onClick={resetGame} disabled={!isGameActive}>Restart Game From Beginning</button>
-        </>
-      )}
-      <Modal show={showModal} onClose={() => setShowModal(false)}>
-        <h2>{modalMessage.includes('Time is up') ? 'Time is up! Game over.' : 'Game Notification'}</h2>
-        <p>{modalMessage}</p>
-        <button onClick={() => setShowModal(false)}>Close</button>
-      </Modal>
+            <button onClick={startGame} disabled={isGameActive}>Start Game!</button>
+          </div>
+        )}
+        <p>Time Remaining: {useTimer ? `${timeRemaining}s` : 'No Timer'}</p>
+        {isLoading ? (
+          <p>Loading...</p>
+        ) : (
+          <>
+            <div id="flag-container">
+              <img id="flag-image" alt="Country Flag" />
+            </div>
+            {gameMode === 'text' ? (
+              <>
+                <input 
+                  type="text" 
+                  value={userAnswer}
+                  onChange={(e) => setUserAnswer(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  placeholder="Enter country name"
+                  disabled={!isGameActive || hasAttempted}
+                />
+                <button onClick={() => checkAnswer(userAnswer)} disabled={!isGameActive || hasAttempted}>Submit Answer</button>
+              </>
+            ) : (
+              <div>
+                {options.map((option, index) => (
+                  <button key={index} onClick={() => checkAnswer(option)} disabled={!isGameActive || hasAttempted}>
+                    {option}
+                  </button>
+                ))}
+              </div>
+            )}
+            <p>{resultMessage}</p>
+            <p>Score: {score} / {totalQuestions}</p>
+            <button onClick={resetScore} disabled={!isGameActive}>Reset Score (Keeps Flag Progress)</button>
+            <button onClick={resetGame} disabled={!isGameActive}>Restart Game From Beginning</button>
+          </>
+        )}
+        <Modal show={showModal} onClose={() => setShowModal(false)}>
+          <h2>{modalMessage.includes('Time is up') ? 'Time is up! Game over.' : 'Game Notification'}</h2>
+          <p>{modalMessage}</p>
+          <button onClick={() => setShowModal(false)}>Close</button>
+        </Modal>
+      </div>
     </div>
   );
 };
 
 export default FlagGame;
-
