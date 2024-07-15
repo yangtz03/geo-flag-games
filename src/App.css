@@ -14,10 +14,11 @@ body, html {
   display: flex;
   flex-direction: column;
   height: 100%;
+  width: 100%;
 }
 
 header {
-  background: linear-gradient(135deg, #3b5998, #8b9dc3);
+  background: linear-gradient(135deg, #4d40bd, #8b9dc3);
   padding: 20px;
   text-align: center;
   color: white;
@@ -33,7 +34,7 @@ header {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+  background: linear-gradient(135deg, #697dd4, #fad0c4);
   padding: 20px;
   text-align: center;
   color: white;
@@ -79,12 +80,12 @@ button {
 
 
 button:not(:disabled) {
-  background-color: #f06;
+  background-color: rgb(91, 89, 233);
   color: white;
 }
 
 button:not(:disabled):hover {
-  background-color: #d0055e;
+  background-color: #c0135e;
 }
 
 .modal-overlay {
