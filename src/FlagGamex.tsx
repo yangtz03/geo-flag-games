@@ -213,6 +213,25 @@ const FlagGame = () => {
     setShowModal(true);
   };
 
+  const afterModal = () => {
+    setShowModal(false);
+    setScore(0);
+    setTotalQuestions(0);
+    setTimeRemaining(initialTime);
+    setIsGameActive(false);
+    setUserAnswer('');
+  };
+
+  const afterModalTotal = () => {
+    setShowModal(false);
+    setScore(0);
+    setTotalQuestions(0);
+    setTimeRemaining(initialTime);
+    setIsGameActive(false);
+    setCurrentFlagIndex(0);
+    setUserAnswer('');
+  };
+
   return (
     <div>
       <header>Guess the Country Flag</header>
@@ -305,7 +324,12 @@ const FlagGame = () => {
         <Modal show={showModal} onClose={() => setShowModal(false)}>
           <h2>{modalMessage.includes('Time is up') ? 'Time is up! Game over.' : 'Game Notification'}</h2>
           <p>{modalMessage}</p>
-          <button onClick={() => setShowModal(false)}>Close</button>
+          <div> {modalMessage.includes ('Time is up') ? 
+          <div>
+          <button onClick={afterModal}>Close and Start From Current Flag</button>
+          <button onClick={afterModalTotal}>Close and Restart Whole Game </button>
+          </div> : <button onClick={afterModal}>Close</button>}
+          </div>
         </Modal>
       </div>
     </div>
