@@ -12,3 +12,10 @@ function App() {
 }
 
 export default App
+
+/* <div> {modalMessage.includes ('Time is up') ? 
+          <div>
+          <button onClick={afterModal}>Close and Start From Current Flag</button>
+          <button onClick={afterModalTotal}>Close and Restart Whole Game </button>
+          </div> : <button onClick={afterModal}>Close</button>}
+          </div> */
