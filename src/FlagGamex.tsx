@@ -138,7 +138,7 @@ const FlagGame: React.FC = () => {
   }, [isGameActive]);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer : NodeJS.Timeout;
     if (isGameActive && useTimer && timeRemaining > 0) {
       timer = setInterval(() => {
         setTimeRemaining(prev => prev - 1);
