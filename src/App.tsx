@@ -12,9 +12,3 @@ function App() {
 }
 
 export default App
-
-/* if (currentFlagIndex === 0) {
-      setCurrentFlagIndex(0);
-    } else {
-      setCurrentFlagIndex(currentFlagIndex + 1)
-    }  Your final score is ${score} out of ${totalQuestions}.*/

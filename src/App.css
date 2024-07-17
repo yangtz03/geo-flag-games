@@ -1,4 +1,3 @@
-/* styles.css */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -15,6 +14,7 @@ body, html {
   flex-direction: column;
   height: 100%;
   width: 100%;
+  background: linear-gradient(135deg, #697dd4, #fad0c4);
 }
 
 header {
@@ -38,6 +38,8 @@ header {
   padding: 20px;
   text-align: center;
   color: white;
+  height: 100%;
+  overflow: hidden;
 }
 
 h1 {
@@ -139,4 +141,3 @@ button:not(:disabled):hover {
 .radio-group label {
   margin: 0 10px;
 }
-

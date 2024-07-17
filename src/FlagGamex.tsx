@@ -234,8 +234,9 @@ const FlagGame = () => {
 
   return (
     <div>
-      <header>Guess the Country Flag</header>
+      <header>Guess the Country Flag &#127884;</header>
       <div className="container">
+        <div className="left-column">
         {!isGameActive && (
           <div>
             <div>
@@ -286,6 +287,8 @@ const FlagGame = () => {
             <button onClick={startGame} disabled={isGameActive}>Start Game!</button>
           </div>
         )}
+        </div>
+        <div className='left-column'>
         <p>Time Remaining: {useTimer ? `${timeRemaining}s` : 'No Timer'}</p>
         {isLoading ? (
           <p>Loading...</p>
@@ -321,6 +324,7 @@ const FlagGame = () => {
             <button onClick={resetGame} disabled={!isGameActive}>Restart Game From Beginning</button>
           </>
         )}
+        </div>
         <Modal show={showModal} onClose={() => setShowModal(false)}>
           <h2>{modalMessage.includes('Time is up') ? 'Time is up! Game over.' : 'Game Notification'}</h2>
           <p>{modalMessage}</p>
